@@ -19,6 +19,8 @@ import socket
 
 import time
 
+from collections import namedtuple
+
 # Read this many bytes at a time of a command. Each socket holds a buffer of
 # data that comes in. If the buffer fills up before you can read it then TCP
 # will slow down transmission so you can keep up. We expect that most commands
@@ -103,6 +105,7 @@ class KeyValueStore(object):
   """
 
   def __init__(self):
+    self.entry = namedtuple('entry', ['value', 'store_time_in_secs'])
     self.store = dict()
     
 
@@ -119,11 +122,15 @@ class KeyValueStore(object):
       None or the value.
     """
     # Check if we've ever put something in the cache.
-
     if key in self.store.keys():
-      return self.store[key]
+      value, store_time_in_secs = self.store[key]
+      if (max_age_in_sec != None and (time.time() - store_time_in_secs) >= max_age_in_sec):
+        return None
+      else:
+         return value
     else:
       return None
+
 
 
 
@@ -135,7 +142,7 @@ class KeyValueStore(object):
       value: string. A value to store.
     """
 
-    self.store[key] = value
+    self.store[key] = self.entry(value, time.time())
 
     
 

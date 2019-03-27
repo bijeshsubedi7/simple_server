@@ -24,7 +24,7 @@ SERVER_PORT = 8000
 # The port that the proxy server is going to occupy. This could be the same
 # as SERVER_PORT, but then you couldn't run the proxy and the server on the
 # same machine.
-LISTENING_PORT = 8003
+LISTENING_PORT = 8004
 
 # Cache values retrieved from the server for this long.
 MAX_CACHE_AGE_SEC = 60.0  # 1 minute
@@ -46,7 +46,6 @@ def ForwardCommandToServer(command, server_addr, server_port):
   client_sock = library.CreateClientSocket(server_addr, server_port)
   client_sock.send('%s\n' % command)
   response = client_sock.recv(MAX_BUFFER_SIZE)
-  print(response)
   client_sock.close()
   return response
   
@@ -76,9 +75,10 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
     response = ForwardCommandToServer(command_line, SERVER_ADDRESS, SERVER_PORT)
     cache.StoreValue(name, response)
   elif (command == 'GET'):
-    response = cache.GetValue(name)
+    response = cache.GetValue(name, MAX_CACHE_AGE_SEC)
     if response == None: 
       response = ForwardCommandToServer(command_line, SERVER_ADDRESS, SERVER_PORT)
+      cache.StoreValue(name, response)
   else:
     response = ForwardCommandToServer(command_line, SERVER_ADDRESS, SERVER_PORT)
 
@@ -101,6 +101,9 @@ def main():
 
     # Close the cliend socket after use. 
     client_sock.close()
+  
+  # Close the server socket at the end.
+  server_sock.close()
 
 
 main()

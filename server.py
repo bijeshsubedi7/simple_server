@@ -146,6 +146,8 @@ def main():
     # We're done with the client, so clean up the socket.
     client_sock.close()
     
+  server_sock.close()
+    
 
 if __name__ == '__main__':
   main()
