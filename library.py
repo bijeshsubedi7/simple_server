@@ -55,7 +55,6 @@ def ConnectClientToServer(server_sock):
 
 def CreateClientSocket(server_addr, port):
   """Creates a socket that connects to a port on a server."""
-
   client_sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
   client_sock.connect((server_addr, port))
   return client_sock
@@ -64,7 +63,6 @@ def CreateClientSocket(server_addr, port):
 def ReadCommand(sock):
   """Read a single command from a socket. The command must end in newline."""
   command = sock.recv(COMMAND_BUFFER_SIZE)
-  # TODO: Is anything left to do?
   return command
 
   
@@ -121,17 +119,19 @@ class KeyValueStore(object):
     Returns:
       None or the value.
     """
-    # Check if we've ever put something in the cache.
+    # Check if the key is in the cache.
     if key in self.store.keys():
       value, store_time_in_secs = self.store[key]
+
+      # Check the age of the value in the cache.
       if (max_age_in_sec != None and (time.time() - store_time_in_secs) >= max_age_in_sec):
+        del self.store[key]  # Delete the key-value pair from the cache.
         return None
       else:
          return value
+
     else:
       return None
-
-
 
 
   def StoreValue(self, key, value):
@@ -144,18 +144,8 @@ class KeyValueStore(object):
 
     self.store[key] = self.entry(value, time.time())
 
-    
 
   def Keys(self):
     """Returns a list of all keys in the datastore."""
 
     return list(self.store.keys())
-    
-
-
-
-
-
-
-
-
