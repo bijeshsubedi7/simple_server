@@ -71,17 +71,14 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
   command, name, value = library.ParseCommand(command_line)
 
   # Determine the type of command.
-  if command == 'PUT':
-    response = ForwardCommandToServer(command_line, SERVER_ADDRESS, SERVER_PORT)
-    cache.StoreValue(name, response)
 
-  elif (command == 'GET'):
+  if (command == 'GET'):
     response = cache.GetValue(name, MAX_CACHE_AGE_SEC)
     if response == None: 
       response = ForwardCommandToServer(command_line, SERVER_ADDRESS, SERVER_PORT)
       cache.StoreValue(name, response)
       
-  else:
+  else:  # DUMP and PUT.
     response = ForwardCommandToServer(command_line, SERVER_ADDRESS, SERVER_PORT)
 
   sock.send(response)
